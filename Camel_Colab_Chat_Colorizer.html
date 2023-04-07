@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Colorize Chat</title>
+	<style>
+	textarea {
+		width: 100%;
+		height: 10px;
+		resize: none;
+	}
+	
+	#output {
+		white-space: pre-wrap;
+		word-wrap: break-word;
+	}
+	</style>
+</head>
+
+<body>
+	<h2>auto-Colorize an AI Chat Conversation</h2>
+	<p>Your Pasted Chat Conversation:</p>
+	<textarea id="input" oninput="colorizeChat()"></textarea>
+	<h1>Colorized Chat</h1>
+	<div id="output"></div>
+	<button id="toggleBtn" onclick="hideElements()">Hide Unecessary Elements</button>
+	<script>
+	function escapeHtml(unsafe) {
+		return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+	}
+
+	function colorizeChat() {
+		const input = document.getElementById('input').value;
+		const output = document.getElementById('output');
+		const aiUserColor = 'blue';
+		const aiAssistantColor = 'green';
+		const specifiedTaskPromptColor = 'red';
+		const lines = input.split('\n');
+		let colorizedText = '';
+		let currentColor = '';
+		for(const line of lines) {
+			if(line.startsWith('AI User:')) {
+				currentColor = aiUserColor;
+				colorizedText += `<span style="color:${currentColor}">${escapeHtml(line)}</span>\n`;
+			} else if(line.startsWith('AI Assistant:')) {
+				currentColor = aiAssistantColor;
+				colorizedText += `<span style="color:${currentColor}">${escapeHtml(line)}</span>\n`;
+			} else if(line.startsWith('Original task prompt:')) {
+				currentColor = '';
+				continue;
+			} else if(line.startsWith('Specified task prompt:')) {
+				currentColor = specifiedTaskPromptColor;
+				colorizedText += `<span style="color:${currentColor}">${escapeHtml(line)}</span>\n`;
+			} else {
+				if(currentColor) {
+					colorizedText += `<span style="color:${currentColor}">${escapeHtml(line)}</span>\n`;
+				}
+			}
+		}
+		output.innerHTML = colorizedText;
+	}
+
+	function hideElements() {
+		document.querySelector('h2').style.display = 'none';
+		document.querySelector('p').style.display = 'none';
+		document.querySelector('textarea').style.display = 'none';
+		document.querySelector('h1').style.display = 'none';
+		const toggleBtn = document.getElementById('toggleBtn');
+		toggleBtn.innerHTML = 'Copy to Clipboard';
+		toggleBtn.onclick = copyToClipboard;
+	}
+
+	function copyToClipboard() {
+		const output = document.getElementById('output');
+		const range = document.createRange();
+		range.selectNode(output);
+		window.getSelection().removeAllRanges();
+		window.getSelection().addRange(range);
+		try {
+			document.execCommand('copy');
+			alert('Colorized text copied to clipboard.');
+		} catch(err) {
+			console.error('Failed to copy text: ', err);
+			alert('Unable to copy text. Please manually select and copy the colorized text.');
+		} finally {
+			window.getSelection().removeAllRanges();
+		}
+	}
+	</script>
+</body>
+</html>
